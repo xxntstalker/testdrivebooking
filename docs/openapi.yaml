@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: Test Drive Booking API
+  description: API для управления бронированием тест-драйвов в автосалоне.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8085/api
+    description: Local development server
+
+tags:
+  - name: Bookings
+    description: Операции с бронированиями
+
+paths:
+  /bookings:
+    get:
+      tags:
+        - Bookings
+      summary: Получить список всех бронирований
+      operationId: getBookings
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags:
+        - Bookings
+      summary: Создать новое бронирование
+      operationId: createBooking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        '201':
+          description: Бронирование создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        car_id:
+          type: integer
+          example: 1
+        slot_id:
+          type: integer
+          example: 1
+        customer_name:
+          type: string
+          example: "Ivan"
+        customer_phone:
+          type: string
+          example: "+79990000000"
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+          example: "confirmed"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BookingRequest:
+      type: object
+      required:
+        - car_id
+        - slot_id
+        - customer_name
+        - customer_phone
+      properties:
+        car_id:
+          type: integer
+          example: 1
+        slot_id:
+          type: integer
+          example: 1
+        customer_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "Ivan"
+        customer_phone:
+          type: string
+          example: "+79990000000"
+
+  responses:
+    Conflict:
+      description: Конфликт ресурсов (слот уже забронирован)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "This time slot is already booked for selected car"
+              error:
+                type: string
+                example: "Conflict"
+
+    ValidationError:
+      description: Ошибка валидации данных
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "The given data was invalid."
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+
+    ServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Server Error"
