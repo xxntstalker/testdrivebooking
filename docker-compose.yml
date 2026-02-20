@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: test-drive-app
+    container_name: test-drive-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - test-drive-network
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: test-drive-nginx
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    volumes:
+      - ./:/var/www/html
+      - ./nginx/conf/:/etc/nginx/conf.d/
+    networks:
+      - test-drive-network
+
+  # MySQL 8 Service
+  db:
+    image: mysql:8.0
+    container_name: test-drive-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: test_drive
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - test-drive-network
+
+volumes:
+  dbdata:
+    driver: local
+
+networks:
+  test-drive-network:
+    driver: bridge
