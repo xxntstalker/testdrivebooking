@@ -22,3 +22,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Filament v5 assets
+/public/js/filament
+/public/css/filament
+/public/fonts/filament

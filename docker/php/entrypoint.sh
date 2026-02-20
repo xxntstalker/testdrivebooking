@@ -16,6 +16,10 @@ while ! nc -z db 3306; do
 done
 echo -e "${GREEN}✅ Database is ready!${NC}"
 
+echo -e "${YELLOW}📦 Running public filament assets...${NC}"
+php artisan filament:assets
+echo -e "${GREEN}✅ Public filament assets completed!${NC}"
+
 echo -e "${YELLOW}📦 Running database migrations...${NC}"
 php artisan migrate --force
 echo -e "${GREEN}✅ Migrations completed!${NC}"

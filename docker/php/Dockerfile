@@ -10,13 +10,14 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libzip-dev \
-    netcat-openbsd
+    netcat-openbsd \
+    libicu-dev
 
 # Очистка кэша
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Установка расширений PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
