@@ -26,11 +26,6 @@ COPY ./docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Создание пользователя (безопасность)
 RUN useradd -G www-data,root -u 1000 -d /home/appuser appuser
-
-RUN mkdir -p /var/log/php && \
-    chown -R appuser:www-data /var/log/php && \
-    chmod 775 /var/log/php
-
 RUN mkdir -p /home/appuser/.composer && \
     chown -R appuser:appuser /home/appuser
 

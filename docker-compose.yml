@@ -24,8 +24,7 @@ services:
       dockerfile: ./docker/php/Dockerfile
     image: test-drive-app
     container_name: test-drive-app
-#    restart: unless-stopped
-    working_dir: /var/www/html
+    restart: unless-stopped
     volumes:
       - ./:/var/www/html
     networks:
