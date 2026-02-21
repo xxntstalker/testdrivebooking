@@ -25,7 +25,12 @@ class StoreBookingRequest extends FormRequest
             'car_id' => 'required|integer|exists:cars,id',
             'slot_id' => 'required|integer|exists:time_slots,id',
             'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
+            'customer_phone' => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^(\+7|8)\d{10}$/',
+            ],
         ];
     }
 }

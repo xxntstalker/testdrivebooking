@@ -14,6 +14,15 @@ class BookingTest extends TestCase
     use RefreshDatabase;
 
     /**
+     * Отправить запрос без логирования
+     */
+    protected function withoutLogging(): self
+    {
+        $this->withHeaders(['X-Testing' => 'true']);
+        return $this;
+    }
+
+    /**
      * Тест 1: Успешное создание брони
      */
     public function test_can_create_booking(): void
@@ -23,7 +32,7 @@ class BookingTest extends TestCase
         $slot = TimeSlot::create(['start_time' => now()->addDay()->setTime(10, 0), 'end_time' => now()->addDay()->setTime(11, 0)]);
 
         // Act (Действие)
-        $response = $this->postJson('/api/bookings', [
+        $response = $this->withoutLogging()->postJson('/api/bookings', [
             'car_id' => $car->id,
             'slot_id' => $slot->id,
             'customer_name' => 'Ivan',
@@ -59,7 +68,7 @@ class BookingTest extends TestCase
         $slot = TimeSlot::create(['start_time' => now()->addDay()->setTime(14, 0), 'end_time' => now()->addDay()->setTime(15, 0)]);
 
         // Первая бронь — успешная
-        $this->postJson('/api/bookings', [
+        $this->withoutLogging()->postJson('/api/bookings', [
             'car_id' => $car->id,
             'slot_id' => $slot->id,
             'customer_name' => 'Ivan',
@@ -67,7 +76,7 @@ class BookingTest extends TestCase
         ])->assertStatus(201);
 
         // Act: Вторая попытка забронировать то же самое
-        $response = $this->postJson('/api/bookings', [
+        $response = $this->withoutLogging()->postJson('/api/bookings', [
             'car_id' => $car->id,
             'slot_id' => $slot->id,
             'customer_name' => 'Petr',
@@ -85,7 +94,7 @@ class BookingTest extends TestCase
     public function test_validation_fails_without_required_fields(): void
     {
         // Act: Отправляем пустой запрос
-        $response = $this->postJson('/api/bookings', []);
+        $response = $this->withoutLogging()->postJson('/api/bookings');
 
         // Assert: Должна быть ошибка 422
         $response->assertStatus(422)

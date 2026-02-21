@@ -12,6 +12,9 @@ class ApiLoggerMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->header('X-Testing') === 'true') {
+            return $next($request);
+        }
         // Запоминаем время начала запроса
         $startTime = microtime(true);
 

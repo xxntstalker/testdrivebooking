@@ -66,16 +66,24 @@ const submit = async () => {
         return;
     }
 
+    const digits = form.value.customer_phone.replace(/\D/g, '');
+    if (digits.length !== 11) {
+        alert('Введите корректный номер телефона (11 цифр)');
+        return;
+    }
+
     submitStatus.value = { isSubmitting: true, error: null };
 
     try {
+        const formData = form.value;
+        formData.customer_phone = '+' + (formData.customer_phone || '').replace(/\D/g, '');
         const response = await fetch('/api/bookings', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify(form.value),
+            body: JSON.stringify(formData),
         });
 
         const data = await response.json();
@@ -130,6 +138,44 @@ const submit = async () => {
         };
     }
 };
+
+// Форматирование телефона при вводе: +7 (999) 123-45-67
+const formatPhone = (value) => {
+    // Удаляем всё кроме цифр
+    let digits = ('' + value).replace(/\D/g, '');
+
+    // Ограничиваем 11 цифрами
+    digits = digits.slice(0, 11);
+
+    // Если начинается с 8 — заменяем на 7
+    if (digits.startsWith('8')) {
+        digits = '7' + digits.slice(1);
+    }
+
+    // Если не начинается с 7 — добавляем 7
+    if (!digits.startsWith('7') && digits.length > 0) {
+        digits = '7' + digits;
+    }
+
+    // Форматируем: +7 (999) 123-45-67
+    if (digits.length === 0) return '';
+    if (digits.length === 1) return '+' + digits;
+    if (digits.length <= 4) return '+' + digits;
+    if (digits.length <= 7) {
+        return '+' + digits.slice(0, 1) + ' (' + digits.slice(1) + ')';
+    }
+    if (digits.length <= 9) {
+        return '+' + digits.slice(0, 1) + ' (' + digits.slice(1, 4) + ') ' + digits.slice(4);
+    }
+    if (digits.length <= 11) {
+        return '+' + digits.slice(0, 1) + ' (' + digits.slice(1, 4) + ') ' +
+            digits.slice(4, 7) + '-' + digits.slice(7, 9) + '-' + digits.slice(9);
+    }
+
+    return '+' + digits.slice(0, 1) + ' (' + digits.slice(1, 4) + ') ' +
+        digits.slice(4, 7) + '-' + digits.slice(7, 9) + '-' + digits.slice(9, 11);
+};
+
 </script>
 
 <template>
@@ -193,7 +239,14 @@ const submit = async () => {
                     <!-- Телефон -->
                     <div class="mb-6">
                         <label class="block text-gray-700 font-medium mb-2">Телефон</label>
-                        <input v-model="form.customer_phone" type="tel" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500" required />
+                        <input
+                            :value="form.customer_phone"
+                            @input="form.customer_phone = formatPhone($event.target.value)"
+                            type="tel"
+                            placeholder="+7 (999) 123-45-67"
+                            class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+                            required
+                        />
                     </div>
 
                     <!-- Кнопка -->
@@ -234,7 +287,7 @@ const submit = async () => {
             <!-- Заголовок -->
             <h3 class="text-xl font-bold text-green-700 mb-4">✅ Бронь успешно оформлена!</h3>
 
-            <!-- Детали (из реального API) -->
+            <!-- Детали -->
             <div v-if="confirmedBooking" class="space-y-3 text-sm">
                 <p><strong>Автомобиль:</strong> {{ confirmedBooking.car.model }} ({{ confirmedBooking.car.license_plate }})</p>
                 <p><strong>Время:</strong> {{ confirmedBooking.slot.start_time }} — {{ confirmedBooking.slot.end_time }}</p>
@@ -259,9 +312,9 @@ const submit = async () => {
                 <button @click="showSuccessModal = false" class="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300">
                     Закрыть
                 </button>
-                <button @click="window.location.href='/'" class="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                <Link href="/" class="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700 text-center inline-block">
                     На главную
-                </button>
+                </Link>
             </div>
         </div>
     </div>

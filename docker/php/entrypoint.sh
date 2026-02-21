@@ -20,38 +20,37 @@ echo -e "${GREEN}✅ Database is ready!${NC}"
 # 2. Установка Composer зависимостей (если нет vendor)
 if [ ! -d "vendor" ]; then
     echo -e "${YELLOW}📦 Installing Composer dependencies...${NC}"
-    composer install --no-dev --optimize-autoloader
+    composer install --optimize-autoloader
     echo -e "${GREEN}✅ Composer dependencies installed!${NC}"
 fi
 
-# 3. Генерация ключа приложения (если нет)
-if [ ! -f ".env" ] || [ -z "$(grep APP_KEY .env)" ]; then
-    echo -e "${YELLOW}🔑 Generating application key...${NC}"
-    php artisan key:generate
-    echo -e "${GREEN}✅ Application key generated!${NC}"
-fi
-
-# 4. Генерация ассетов для филамента
+# 3. Генерация ассетов для филамента
 echo -e "${YELLOW}📦 Running public filament assets...${NC}"
 php artisan filament:assets
 echo -e "${GREEN}✅ Public filament assets completed!${NC}"
 
-# 5. Запуск миграций
+# 4. Запуск миграций
 echo -e "${YELLOW}📦 Running database migrations...${NC}"
 php artisan migrate --force
 echo -e "${GREEN}✅ Migrations completed!${NC}"
 
-# 6. Посев демо-данных
+# 5. Посев демо-данных
 echo -e "${YELLOW}🌱 Seeding demo data...${NC}"
 php artisan db:seed
 echo -e "${GREEN}✅ Demo data seeded!${NC}"
 
-# 7. Для продакшена нужно включить Кэширование, для разработки - очищаем кеш
+# 6. Для продакшена нужно включить Кэширование, для разработки - очищаем кеш
 echo -e "${YELLOW}🔧 Development mode - clearing cache${NC}"
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 echo -e "${GREEN}✅ Clearing cache!${NC}"
+
+# 7. Билдим фронт
+echo -e "${YELLOW}🔧 Build front - start ${NC}"
+npm ci
+npm run build
+echo -e "${GREEN}✅ Front builded!${NC}"
 
 # Вывод учётных данных
 echo -e "${GREEN}"

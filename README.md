@@ -13,17 +13,9 @@
 ### Запуск
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/xxntstalker/testdrivebooking.git
 cd test-drive-service
 cp ./app/.env.example ./app/.env
-```
-
-#### Устанавливаем переменные окружения для БД
-```env
-DB_HOST=db
-DB_DATABASE=test_drive
-DB_USERNAME=testuser
-DB_PASSWORD=secret
 ```
 
 #### Запускаем docker-compose
@@ -152,6 +144,7 @@ tests/
 ```bash
 curl -X POST http://localhost:8085/api/bookings \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
   -d '{
     "car_id": 1,
     "slot_id": 5,
@@ -194,23 +187,6 @@ curl -X POST http://localhost:8085/api/bookings \
 
 ## 🐳 Docker и DevOps
 
-### Мультистадийная сборка
-
-```dockerfile
-# Этап 1: Сборка фронтенда
-FROM node:24-alpine AS frontend
-RUN npm ci && npm run build
-
-# Этап 2: PHP Runtime
-FROM php:8.5-fpm
-COPY --from=frontend /app/public/build ./public/build
-```
-
-**Преимущества:**
-- ✅ Маленький финальный образ (нет Node.js в рантайме)
-- ✅ Воспроизводимая сборка
-- ✅ Кэширование слоёв для ускорения CI/CD
-
 ### Entrypoint-скрипт
 
 Автоматизирует развёртывание:
@@ -218,7 +194,7 @@ COPY --from=frontend /app/public/build ./public/build
 2.  Установка Composer-зависимостей (если нужно)
 3.  Применение миграций
 4.  Посев демо-данных
-
+5.  Сборка фронта
 ---
 
 ## 🛠 Технологический стек
@@ -275,11 +251,3 @@ COPY --from=frontend /app/public/build ./public/build
 ├── .gitignore
 └── README.md
 ```
-
----
-
-> **Автор:** [Ваше Имя]  
-> **Контакты:** [your.email@example.com]  
-> **GitHub:** [github.com/yourusername](https://github.com/yourusername)
-
----
