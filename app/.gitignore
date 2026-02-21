@@ -29,3 +29,11 @@ Thumbs.db
 /public/fonts/filament
 
 /public/js/saade
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Vite
+public/build

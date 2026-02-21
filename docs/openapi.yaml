@@ -20,17 +20,90 @@ paths:
     get:
       tags:
         - Bookings
-      summary: Получить список всех бронирований
+      summary: Получить список бронирований
+      description: Возвращает пагинированный список активных бронирований (pending и confirmed). Персональные данные клиентов скрыты.
       operationId: getBookings
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Номер страницы
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Количество записей на странице (макс. 100)
+        - in: query
+          name: car_id
+          schema:
+            type: integer
+          description: Фильтр по автомобилю
+        - in: query
+          name: date_from
+          schema:
+            type: string
+            format: date
+          description: Фильтр по дате начала (от)
+        - in: query
+          name: date_to
+          schema:
+            type: string
+            format: date
+          description: Фильтр по дате начала (до)
       responses:
         '200':
-          description: Успешный ответ
+          description: Успешный ответ с пагинацией
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Booking'
+                type: object
+                properties:
+                  current_page:
+                    type: integer
+                    example: 1
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+                  first_page_url:
+                    type: string
+                    format: uri
+                  from:
+                    type: integer
+                  last_page:
+                    type: integer
+                  last_page_url:
+                    type: string
+                    format: uri
+                  next_page_url:
+                    type: string
+                    format: uri
+                    nullable: true
+                  path:
+                    type: string
+                    format: uri
+                  per_page:
+                    type: integer
+                  prev_page_url:
+                    type: string
+                    format: uri
+                    nullable: true
+                  to:
+                    type: integer
+                  total:
+                    type: integer
+        '400':
+          description: Ошибка валидации параметров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -38,6 +111,7 @@ paths:
       tags:
         - Bookings
       summary: Создать новое бронирование
+      description: Создаёт новую бронь на тест-драйв. Проверяет доступность слота для выбранного автомобиля.
       operationId: createBooking
       requestBody:
         required: true
@@ -59,26 +133,77 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /bookings/check:
+    get:
+      tags:
+        - Bookings
+      summary: Проверить доступность слота
+      description: Проверяет, свободен ли выбранный слот для конкретного автомобиля.
+      operationId: checkBookingAvailability
+      parameters:
+        - in: query
+          name: car_id
+          required: true
+          schema:
+            type: integer
+          description: ID автомобиля
+        - in: query
+          name: slot_id
+          required: true
+          schema:
+            type: integer
+          description: ID временного слота
+      responses:
+        '200':
+          description: Результат проверки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlotAvailability'
+        '400':
+          description: Ошибка валидации параметров
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
 components:
   schemas:
     Booking:
       type: object
+      description: Информация о бронировании (персональные данные скрыты)
       properties:
         id:
           type: integer
           example: 1
-        car_id:
-          type: integer
-          example: 1
-        slot_id:
-          type: integer
-          example: 1
-        customer_name:
-          type: string
-          example: "Ivan"
-        customer_phone:
-          type: string
-          example: "+79990000000"
+        car:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            model:
+              type: string
+              example: "Tesla Model 3"
+            license_plate:
+              type: string
+              example: "A001AA"
+        slot:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            start_time:
+              type: string
+              format: date-time
+              example: "2026-02-21T10:00:00+00:00"
+            end_time:
+              type: string
+              format: date-time
+              example: "2026-02-21T11:00:00+00:00"
         status:
           type: string
           enum: [pending, confirmed, cancelled]
@@ -86,9 +211,7 @@ components:
         created_at:
           type: string
           format: date-time
-        updated_at:
-          type: string
-          format: date-time
+          example: "2026-02-20T12:00:00+00:00"
 
     BookingRequest:
       type: object
@@ -112,6 +235,29 @@ components:
         customer_phone:
           type: string
           example: "+79990000000"
+
+    SlotAvailability:
+      type: object
+      properties:
+        available:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Slot is available"
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Invalid parameters"
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
 
   responses:
     Conflict:
