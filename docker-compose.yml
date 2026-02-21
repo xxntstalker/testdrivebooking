@@ -24,11 +24,14 @@ services:
       dockerfile: ./docker/php/Dockerfile
     image: test-drive-app
     container_name: test-drive-app
-    restart: unless-stopped
+    environment:
+      - APP_ENV=local
+      - LOG_CHANNEL=stderr
     volumes:
       - ./:/var/www/html
     networks:
       - test-drive-network
+
 
   # Nginx Service
   nginx:
